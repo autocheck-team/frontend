@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Пока каркаса нет (HPRPR-23), джоба проходит без шагов сборки,
+      # чтобы обязательная проверка в правилах ветки не блокировала PR.
+      - id: check
+        run: echo "present=${{ hashFiles('package.json') != '' }}" >> "$GITHUB_OUTPUT"
+      - if: steps.check.outputs.present == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - if: steps.check.outputs.present == 'true'
+        run: npm ci
+      - if: steps.check.outputs.present == 'true'
+        run: npm run lint
+      - if: steps.check.outputs.present == 'true'
+        run: npm run build
+      - if: steps.check.outputs.present == 'true'
+        run: npm test --if-present
