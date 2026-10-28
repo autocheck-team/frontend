@@ -5,8 +5,9 @@ import { HomePage } from '../pages/HomePage'
 import { LoginPage } from '../pages/LoginPage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
-import { PlaceholderPage } from '../pages/PlaceholderPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
+import { ProblemsPage } from '../pages/ProblemsPage'
+import { ProblemPage } from '../pages/ProblemPage'
 
 export function App() {
   return (
@@ -21,7 +22,7 @@ export function App() {
             path="problems"
             element={
               <AuthRequired>
-                <PlaceholderPage title="Задания" task="HPPR-21" />
+                <ProblemsPage />
               </AuthRequired>
             }
           />
@@ -29,7 +30,7 @@ export function App() {
             path="problems/:problemId"
             element={
               <AuthRequired>
-                <PlaceholderPage title="Задание" task="HPPR-21" />
+                <ProblemPage />
               </AuthRequired>
             }
           />

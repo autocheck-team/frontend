@@ -52,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       status,
       configured: Boolean(oidcConfig),
       error,
+      hasRole: (role) => Boolean(client?.hasRealmRole(role)),
       login: async (email) => {
         if (!client) {
           setError('Авторизация пока не инициализирована.')
