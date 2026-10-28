@@ -3,6 +3,8 @@ import { AuthRequired } from '../auth/AuthRequired'
 import { AppLayout } from '../components/AppLayout'
 import { HomePage } from '../pages/HomePage'
 import { LoginPage } from '../pages/LoginPage'
+import { RegisterPage } from '../pages/RegisterPage'
+import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
 import { PlaceholderPage } from '../pages/PlaceholderPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 
@@ -13,7 +15,8 @@ export function App() {
         <Route element={<AppLayout />}>
           <Route index element={<HomePage />} />
           <Route path="login" element={<LoginPage />} />
-          <Route path="register" element={<PlaceholderPage title="Регистрация" task="HPPR-22" />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="forgot-password" element={<ForgotPasswordPage />} />
           <Route
             path="problems"
             element={

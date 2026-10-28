@@ -52,16 +52,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       status,
       configured: Boolean(oidcConfig),
       error,
-      login: async () => {
+      login: async (email) => {
         if (!client) {
           setError('Авторизация пока не инициализирована.')
           setStatus('error')
           return
         }
         try {
-          await client.login({ redirectUri: window.location.href })
+          await client.login({
+            redirectUri: window.location.href,
+            ...(email ? { loginHint: email } : {}),
+          })
         } catch {
           setError('Не удалось открыть сервис авторизации.')
+          setStatus('error')
+        }
+      },
+      register: async () => {
+        if (!client) {
+          setError('Авторизация пока не инициализирована.')
+          setStatus('error')
+          return
+        }
+        try {
+          await client.register({ redirectUri: `${window.location.origin}/register` })
+        } catch {
+          setError('Не удалось открыть регистрацию Keycloak.')
+          setStatus('error')
+        }
+      },
+      startPasswordRecovery: async (email) => {
+        if (!client) {
+          setError('Авторизация пока не инициализирована.')
+          setStatus('error')
+          return
+        }
+        try {
+          await client.login({ loginHint: email, redirectUri: `${window.location.origin}/forgot-password` })
+        } catch {
+          setError('Не удалось открыть форму Keycloak.')
           setStatus('error')
         }
       },

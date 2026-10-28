@@ -6,7 +6,9 @@ export interface AuthContextValue {
   status: AuthStatus
   configured: boolean
   error: string | null
-  login: () => Promise<void>
+  login: (email?: string) => Promise<void>
+  register: () => Promise<void>
+  startPasswordRecovery: (email: string) => Promise<void>
   logout: () => Promise<void>
   getAccessToken: () => Promise<string | undefined>
 }
