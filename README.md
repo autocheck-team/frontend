@@ -1,28 +1,65 @@
-# frontend
+# AutoCheck frontend
 
 [![CI](https://github.com/autocheck-team/frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/autocheck-team/frontend/actions/workflows/ci.yml)
 
-Веб-интерфейс системы автоматической проверки решений: каталог заданий, редактор кода,
-результаты проверки, кабинет автора заданий.
+React-приложение платформы для автоматической проверки программных решений. В текущем каркасе настроены маршрутизация, общая UI-основа, OIDC через Keycloak и клиент REST API. Каталог заданий и содержимое страницы задания будут реализованы отдельно в HPPR-21, пользовательские сценарии регистрации — в HPPR-22.
 
-- **Стек:** React + TypeScript (Vite)
-- **Архитектура системы:** [infra/docs/architecture.md](https://github.com/autocheck-team/infra/blob/main/docs/architecture.md)
-- **Задачи:** [GitHub Project](https://github.com/orgs/autocheck-team/projects)
+## Требования
 
-> Каркас приложения ещё не создан (задача HPRPR-23). CI начнёт собирать проект,
-> как только в корне появится `package.json`: ожидаются скрипты `lint` и `build`,
-> `test` по желанию.
+- Node.js 24.x (совпадает с версией в CI).
+- npm 10 или новее.
 
-## Бэкенд для разработки
+## Запуск
 
-API поднимается из репозитория [infra](https://github.com/autocheck-team/infra), Go ставить не нужно:
+Из корня репозитория frontend:
 
 ```sh
-git clone git@github.com:autocheck-team/infra.git
-cd infra && make up      # API на http://localhost:8080
+npm ci
+cp .env.example .env.local
+npm run dev
 ```
 
-## Как вносить изменения
+Dev-сервер будет доступен по адресу <http://localhost:5173>. Для типизации, линтинга и production-сборки:
 
-Ветка от `main` → PR → зелёный CI → squash merge. Прямые пуши в `main` запрещены.
-Подробнее: [CONTRIBUTING](https://github.com/autocheck-team/.github/blob/main/CONTRIBUTING.md).
+```sh
+npm run typecheck
+npm run lint
+npm test
+npm run build
+```
+
+Тесты выполняются Vitest; CI вызывает их через существующую команду `npm test --if-present`.
+
+## Переменные окружения
+
+Локальные значения можно взять из `.env.example`:
+
+| Переменная | Назначение | Локальное значение |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | Базовый URL REST API | `http://localhost:8080` |
+| `VITE_OIDC_URL` | URL Keycloak | `http://localhost:8180` |
+| `VITE_OIDC_REALM` | Realm | `autocheck` |
+| `VITE_OIDC_CLIENT_ID` | Публичный клиент браузера | `autocheck-web` |
+
+`VITE_*` значения доступны клиентской сборке. Хранить в них секреты, client secret или токены нельзя.
+
+## Инфраструктура и API
+
+Frontend запускается отдельно от инфраструктуры. В `../infra/README.md` описан запуск общего стека командой `make up` из каталога `infra`; если используется локальный исходник backend, документация указывает `make up-local`. Эти команды запускают Compose-сервисы, включая PostgreSQL, SeaweedFS, Keycloak, миграции и backend API.
+
+REST API доступен на `http://localhost:8080`, OpenAPI — `GET /openapi.yaml`. Контракты находятся в `../backend/api/openapi/autocheck.swagger.yaml` и `../backend/api/autocheck/v1/`. API-клиент передаёт Bearer-токен, если он предоставлен, и преобразует сетевые/HTTP-ошибки в `ApiError`.
+
+OIDC использует realm `autocheck` и публичный клиент `autocheck-web` с Authorization Code + PKCE S256. Значения совпадают с `../infra/deploy/keycloak/autocheck-realm.json`; redirect URI и web origin настроены для `http://localhost:5173`. Роли и права проверяет backend.
+
+## Ограничения каркаса
+
+- `/login` предоставляет только переход к размещённому в Keycloak входу; форма входа и сценарии регистрации/восстановления пароля сюда не дублируются.
+- `/register` — маршрут-заготовка HPPR-22.
+- `/problems` и `/problems/:problemId` защищены проверкой авторизации, но пока содержат заглушку HPPR-21.
+- Worker backend пока не выполняет проверку решений; frontend не показывает фиктивные результаты.
+- В backend-контрактах не обнаружен SSE API.
+- Без параметров OIDC публичная стартовая страница остаётся доступна; защищённые разделы сообщают, что авторизация не настроена.
+
+## Внесение изменений
+
+Ветка от `main` → PR → зелёный CI → squash merge. Прямые пуши в `main` запрещены. Подробнее: [CONTRIBUTING](https://github.com/autocheck-team/.github/blob/main/CONTRIBUTING.md).
