@@ -11,7 +11,7 @@ export function HomePage() {
           <span className="eyebrow">Платформа для учебных задач</span>
           <h1 id="home-title">Пишите код.<br /><span>Проверяйте решения.</span></h1>
           <p className="hero-description">
-            AutoCheck помогает студентам отправлять программные решения, а преподавателям —
+            Система помогает студентам отправлять программные решения, а преподавателям —
             проверять их на тестах.
           </p>
           <div className="hero-actions">
@@ -19,7 +19,7 @@ export function HomePage() {
             {status === 'authenticated' ? (
               <Link className="text-link" to="/problems">Открыть каталог <span aria-hidden="true">→</span></Link>
             ) : (
-              <Link className="text-link" to="/login">Войти в AutoCheck <span aria-hidden="true">→</span></Link>
+              <Link className="text-link" to="/login">Войти <span aria-hidden="true">→</span></Link>
             )}
           </div>
         </div>

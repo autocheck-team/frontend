@@ -1,4 +1,5 @@
-# AutoCheck frontend
+
+# Frontend
 
 [![CI](https://github.com/autocheck-team/frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/autocheck-team/frontend/actions/workflows/ci.yml)
 

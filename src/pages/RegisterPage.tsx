@@ -47,7 +47,7 @@ export function RegisterPage() {
         ) : (
           <form className="auth-form" onSubmit={(event) => void handleSubmit(event)}>
             <fieldset className="role-fieldset" aria-describedby="role-help">
-              <legend className="field-label">Как вы планируете использовать AutoCheck?</legend>
+              <legend className="field-label">Как вы планируете использовать систему?</legend>
               <div className="choice-grid">
                 <label className={`choice-card${intent === 'student' ? ' selected' : ''}`}>
                   <input
