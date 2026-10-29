@@ -30,7 +30,7 @@ export function LoginPage() {
 
   return (
     <main className="page-shell narrow-page">
-      <PageHeading eyebrow="Учетная запись" title="Войти в AutoCheck" />
+      <PageHeading eyebrow="Учетная запись" title="Войти" />
       <section className="surface auth-surface">
         <p className="form-intro">Вход защищён Keycloak. Пароль вводится только на странице авторизации.</p>
         {auth.error && <Notice title="Не удалось начать вход" tone="error" role="alert">{auth.error}</Notice>}

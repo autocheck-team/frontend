@@ -8,9 +8,8 @@ export function AppLayout() {
     <div className="app-frame">
       <header className="site-header">
         <div className="header-inner">
-          <NavLink className="brand" to="/" aria-label="AutoCheck — главная">
+          <NavLink className="brand" to="/" aria-label="На главную">
             <span className="brand-mark" aria-hidden="true">A</span>
-            <span>AutoCheck</span>
           </NavLink>
           <nav className="main-nav" aria-label="Основная навигация">
             <NavLink to="/problems">Задания</NavLink>
@@ -23,7 +22,7 @@ export function AppLayout() {
         </div>
       </header>
       <Outlet />
-      <footer className="site-footer"><span>AutoCheck</span><span>Среда для проверки программных решений</span></footer>
+      <footer className="site-footer"><span>Среда для проверки программных решений</span></footer>
     </div>
   )
 }
