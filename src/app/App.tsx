@@ -11,6 +11,7 @@ import { ProblemPage } from '../pages/ProblemPage'
 import { AuthorRequired } from '../auth/AuthorRequired'
 import { AuthorProblemsPage } from '../pages/AuthorProblemsPage'
 import { AuthorProblemEditorPage } from '../pages/AuthorProblemEditorPage'
+import { SubmitProblemPage } from '../pages/SubmitProblemPage'
 
 export function App() {
   return (
@@ -46,6 +47,14 @@ export function App() {
             element={
               <AuthRequired>
                 <ProblemPage />
+              </AuthRequired>
+            }
+          />
+          <Route
+            path="problems/:problemId/submit"
+            element={
+              <AuthRequired>
+                <SubmitProblemPage />
               </AuthRequired>
             }
           />

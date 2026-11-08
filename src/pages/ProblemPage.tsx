@@ -7,6 +7,7 @@ import { useApiClient } from '../api/useApiClient'
 import { Button } from '../components/ui/Button'
 import { Notice } from '../components/ui/Notice'
 import { PageHeading } from '../components/ui/PageHeading'
+import { ButtonLink } from '../components/ui/Button'
 
 interface ProblemDetails {
   problem: Problem
@@ -124,6 +125,9 @@ export function ProblemPage() {
           <div><span>Память</span><strong>{formatMemory(problem.memoryLimitKb)}</strong></div>
         </div>
       </header>
+      <div className="problem-submit-action">
+        <ButtonLink to={`/problems/${encodeURIComponent(problem.id)}/submit`}>Отправить решение</ButtonLink>
+      </div>
 
       <section className="detail-section statement-section">
         <h2>Условие</h2>
