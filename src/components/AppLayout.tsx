@@ -10,6 +10,7 @@ export function AppLayout() {
         <div className="header-inner">
           <NavLink className="brand" to="/" aria-label="На главную">
             <span className="brand-mark" aria-hidden="true">A</span>
+
           </NavLink>
           <nav className="main-nav" aria-label="Основная навигация">
             <NavLink to="/problems">Задания</NavLink>
