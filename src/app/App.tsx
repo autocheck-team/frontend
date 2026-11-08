@@ -8,6 +8,9 @@ import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 import { ProblemsPage } from '../pages/ProblemsPage'
 import { ProblemPage } from '../pages/ProblemPage'
+import { AuthorRequired } from '../auth/AuthorRequired'
+import { AuthorProblemsPage } from '../pages/AuthorProblemsPage'
+import { AuthorProblemEditorPage } from '../pages/AuthorProblemEditorPage'
 
 export function App() {
   return (
@@ -18,6 +21,18 @@ export function App() {
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
+          <Route
+            path="author/problems"
+            element={<AuthRequired><AuthorRequired><AuthorProblemsPage /></AuthorRequired></AuthRequired>}
+          />
+          <Route
+            path="author/problems/new"
+            element={<AuthRequired><AuthorRequired><AuthorProblemEditorPage /></AuthorRequired></AuthRequired>}
+          />
+          <Route
+            path="author/problems/:problemId"
+            element={<AuthRequired><AuthorRequired><AuthorProblemEditorPage /></AuthorRequired></AuthRequired>}
+          />
           <Route
             path="problems"
             element={
