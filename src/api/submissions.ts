@@ -44,14 +44,15 @@ export async function getSubmission(api: ApiRequester, id: string): Promise<Subm
   return { submission: response.submission, testRuns: response.testRuns ?? [] }
 }
 
-export function listSubmissions(
+export async function listSubmissions(
   api: ApiRequester,
   options: { problemId?: string; pageSize?: number; pageToken?: string } = {},
 ): Promise<SubmissionPage> {
   const query = new URLSearchParams({ pageSize: String(options.pageSize ?? 20) })
   if (options.problemId) query.set('problemId', options.problemId)
   if (options.pageToken) query.set('pageToken', options.pageToken)
-  return api.request<SubmissionPage>(`/v1/submissions?${query.toString()}`)
+  const response = await api.request<Partial<SubmissionPage>>(`/v1/submissions?${query.toString()}`)
+  return { submissions: response.submissions ?? [], nextPageToken: response.nextPageToken }
 }
 
 export async function createSubmission(

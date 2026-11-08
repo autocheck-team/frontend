@@ -45,4 +45,12 @@ describe('submission API contract', () => {
     await listSubmissions(api, { problemId: 'problem-id', pageSize: 10, pageToken: 'page/token' })
     expect(request).toHaveBeenCalledWith('/v1/submissions?pageSize=10&problemId=problem-id&pageToken=page%2Ftoken')
   })
+
+  it('requests the current user history without invented verdict or sort parameters', async () => {
+    const request = vi.fn(async () => ({}))
+    const api: ApiRequester = { request: request as ApiRequester['request'] }
+
+    await expect(listSubmissions(api)).resolves.toEqual({ submissions: [], nextPageToken: undefined })
+    expect(request).toHaveBeenCalledWith('/v1/submissions?pageSize=20')
+  })
 })

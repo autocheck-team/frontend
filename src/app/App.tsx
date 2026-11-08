@@ -13,6 +13,7 @@ import { AuthorProblemsPage } from '../pages/AuthorProblemsPage'
 import { AuthorProblemEditorPage } from '../pages/AuthorProblemEditorPage'
 import { SubmitProblemPage } from '../pages/SubmitProblemPage'
 import { SubmissionResultPage } from '../pages/SubmissionResultPage'
+import { SubmissionHistoryPage } from '../pages/SubmissionHistoryPage'
 
 export function App() {
   return (
@@ -58,6 +59,10 @@ export function App() {
                 <SubmitProblemPage />
               </AuthRequired>
             }
+          />
+          <Route
+            path="submissions"
+            element={<AuthRequired><SubmissionHistoryPage /></AuthRequired>}
           />
           <Route
             path="submissions/:submissionId"
