@@ -12,6 +12,7 @@ import { AuthorRequired } from '../auth/AuthorRequired'
 import { AuthorProblemsPage } from '../pages/AuthorProblemsPage'
 import { AuthorProblemEditorPage } from '../pages/AuthorProblemEditorPage'
 import { SubmitProblemPage } from '../pages/SubmitProblemPage'
+import { SubmissionResultPage } from '../pages/SubmissionResultPage'
 
 export function App() {
   return (
@@ -57,6 +58,10 @@ export function App() {
                 <SubmitProblemPage />
               </AuthRequired>
             }
+          />
+          <Route
+            path="submissions/:submissionId"
+            element={<AuthRequired><SubmissionResultPage /></AuthRequired>}
           />
           <Route path="404" element={<NotFoundPage />} />
           <Route path="*" element={<Navigate to="/404" replace />} />

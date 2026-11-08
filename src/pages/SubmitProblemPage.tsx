@@ -183,7 +183,7 @@ export function SubmitProblemPage() {
             <Notice title="Посылка создана" role="status">
               <p>Решение принято в очередь проверки. Идентификатор: <code>{submission.id}</code></p>
               <p>Статус: {submission.status.replace(/^SUBMISSION_STATUS_/, '').toLocaleLowerCase()}.</p>
-              <span className="field-hint">Страница результатов ещё не подключена.</span>
+              <Link className="text-link" to={`/submissions/${encodeURIComponent(submission.id)}`}>Открыть результат проверки →</Link>
             </Notice>
           )}
 
