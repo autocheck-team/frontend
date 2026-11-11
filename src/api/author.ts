@@ -57,11 +57,26 @@ export async function createProblem(api: ApiRequester, problem: ProblemInput): P
   return response.problem
 }
 
+function editableProblem(problem: Problem & ProblemInput): ProblemInput {
+  return {
+    slug: problem.slug,
+    title: problem.title,
+    statement: problem.statement,
+    timeLimitMs: problem.timeLimitMs,
+    memoryLimitKb: problem.memoryLimitKb,
+    checker: problem.checker,
+    ...(problem.floatEpsilon === undefined ? {} : { floatEpsilon: problem.floatEpsilon }),
+    languageIds: problem.languageIds,
+    allowAiHints: problem.allowAiHints,
+    isPublished: problem.isPublished,
+    stopOnFirstFailure: problem.stopOnFirstFailure,
+  }
+}
+
 export async function updateProblem(api: ApiRequester, problem: Problem & ProblemInput): Promise<Problem> {
-  const { id, ...editableFields } = problem
   const response = await api.request<{ problem?: Problem }>(
-    `/v1/problems/${encodeURIComponent(id)}`,
-    { method: 'PATCH', body: JSON.stringify(problemBody(editableFields)) },
+    `/v1/problems/${encodeURIComponent(problem.id)}`,
+    { method: 'PATCH', body: JSON.stringify(problemBody(editableProblem(problem))) },
   )
   if (!response.problem) throw new Error('Сервер не вернул обновлённое задание.')
   return response.problem

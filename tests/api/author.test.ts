@@ -49,8 +49,14 @@ describe('author API contracts', () => {
     })
   })
 
-  it('uses the PATCH path and excludes id from the inferred update mask body', async () => {
-    const result = { ...input, id: 'problem-id' } as Problem & ProblemInput
+  it('uses the PATCH path and excludes server-owned fields from the update body', async () => {
+    const result = {
+      ...input,
+      id: 'problem-id',
+      authorId: 'author-id',
+      readyTestCount: 3,
+      createTime: '2026-01-01T00:00:00Z',
+    } as Problem & ProblemInput
     const { api, calls } = apiWith({ problem: result })
     await updateProblem(api, result)
     const [path, options] = calls[0]
@@ -58,7 +64,23 @@ describe('author API contracts', () => {
     expect(options?.method).toBe('PATCH')
     const body = JSON.parse(String(options?.body)) as Record<string, unknown>
     expect(body.id).toBeUndefined()
+    expect(body.authorId).toBeUndefined()
+    expect(body.readyTestCount).toBeUndefined()
+    expect(body.createTime).toBeUndefined()
     expect(body.checker).toBe('CHECKER_FLOAT')
+    expect(body).toEqual({
+      slug: input.slug,
+      title: input.title,
+      statement: input.statement,
+      timeLimitMs: input.timeLimitMs,
+      memoryLimitKb: input.memoryLimitKb,
+      checker: 'CHECKER_FLOAT',
+      floatEpsilon: input.floatEpsilon,
+      languageIds: input.languageIds,
+      allowAiHints: input.allowAiHints,
+      isPublished: input.isPublished,
+      stopOnFirstFailure: input.stopOnFirstFailure,
+    })
   })
 
   it('uses the supported problemId and pageToken submission filters', async () => {

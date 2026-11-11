@@ -46,7 +46,8 @@ interface TestUpload {
   expectedUrl: string
   inputFile: File
   expectedFile: File
-  uploaded: boolean
+  inputUploaded: boolean
+  expectedUploaded: boolean
   error?: string
 }
 
@@ -92,6 +93,7 @@ export function AuthorProblemEditorPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [testUpload, setTestUpload] = useState<TestUpload | null>(null)
   const [testBusy, setTestBusy] = useState(false)
+  const [testError, setTestError] = useState<string | null>(null)
   const [checkerBusy, setCheckerBusy] = useState(false)
   const [checkerMessage, setCheckerMessage] = useState<string | null>(null)
   const [stats, setStats] = useState<SubmissionSummary[] | null>(null)
@@ -195,14 +197,16 @@ export function AuthorProblemEditorPage() {
     if (!problemId || !loaded) return
     const formElement = event.currentTarget
     const form = new FormData(formElement)
-    const inputFile = form.get('inputFile')
-    const expectedFile = form.get('expectedFile')
-    if (!(inputFile instanceof File) || inputFile.size === 0 || !(expectedFile instanceof File) || expectedFile.size === 0) {
-      setFormError('Выберите оба файла: входные данные и ожидаемый вывод.')
+    const inputFile = formElement.querySelector<HTMLInputElement>('input[name="inputFile"]')?.files?.item(0) ?? null
+    const expectedFile = formElement.querySelector<HTMLInputElement>('input[name="expectedFile"]')?.files?.item(0) ?? null
+    setFormError(null)
+    setTestError(null)
+    if (!inputFile || !expectedFile) {
+      setTestError('Выберите оба файла: входные данные и ожидаемый вывод.')
       return
     }
     setTestBusy(true)
-    setFormError(null)
+    setTestError(null)
     try {
       const pointsValue = Number(form.get('points') || 1)
       const created = await createTestCase(api, problemId, {
@@ -213,36 +217,65 @@ export function AuthorProblemEditorPage() {
         await reloadData(problemId)
         throw new Error('API не вернул идентификатор теста или ссылки для загрузки.')
       }
-      await reloadData(problemId)
+      const createdTestCase = created.testCase
+      setLoaded((current) => current
+        ? { ...current, testCases: [...current.testCases, createdTestCase] }
+        : current)
       setTestUpload({
-        id: created.testCase.id,
+        id: createdTestCase.id,
         inputUrl: created.inputUploadUrl,
         expectedUrl: created.expectedUploadUrl,
         inputFile,
         expectedFile,
-        uploaded: false,
+        inputUploaded: false,
+        expectedUploaded: false,
       })
       formElement.reset()
+      await uploadAndConfirmTest({
+        id: createdTestCase.id,
+        inputUrl: created.inputUploadUrl,
+        expectedUrl: created.expectedUploadUrl,
+        inputFile,
+        expectedFile,
+        inputUploaded: false,
+        expectedUploaded: false,
+      })
     } catch (error) {
-      setFormError(errorMessage(error))
+      setTestError(errorMessage(error))
     } finally {
       setTestBusy(false)
     }
   }
 
-  async function uploadAndConfirmTest() {
-    if (!problemId || !testUpload) return
-    setTestBusy(true)
+  async function uploadAndConfirmTest(upload: TestUpload) {
+    if (!problemId) return
     setTestUpload((current) => current ? { ...current, error: undefined } : current)
+    let progress = upload
+    if (!progress.inputUploaded) {
+      await uploadPresignedFile(progress.inputUrl, progress.inputFile)
+      progress = { ...progress, inputUploaded: true }
+      setTestUpload(progress)
+    }
+    if (!progress.expectedUploaded) {
+      await uploadPresignedFile(progress.expectedUrl, progress.expectedFile)
+      progress = { ...progress, expectedUploaded: true }
+      setTestUpload(progress)
+    }
+    await confirmTestCase(api, problemId, progress.id)
+    setTestUpload(null)
     try {
-      if (!testUpload.uploaded) {
-        await uploadPresignedFile(testUpload.inputUrl, testUpload.inputFile)
-        await uploadPresignedFile(testUpload.expectedUrl, testUpload.expectedFile)
-        setTestUpload((current) => current ? { ...current, uploaded: true } : current)
-      }
-      await confirmTestCase(api, problemId, testUpload.id)
       await reloadData(problemId)
-      setTestUpload(null)
+    } catch {
+      setTestError('Тест загружен и подтверждён, но список не обновился. Перезагрузите страницу.')
+    }
+  }
+
+  async function retryTestUpload() {
+    if (!testUpload || testBusy) return
+    setTestBusy(true)
+    setTestError(null)
+    try {
+      await uploadAndConfirmTest(testUpload)
     } catch (error) {
       setTestUpload((current) => current ? { ...current, error: errorMessage(error) } : current)
     } finally {
@@ -256,6 +289,7 @@ export function AuthorProblemEditorPage() {
     setFormError(null)
     try {
       await deleteTestCase(api, problemId, testCaseId)
+      if (testUpload?.id === testCaseId) setTestUpload(null)
       await reloadData(problemId)
     } catch (error) {
       setFormError(errorMessage(error))
@@ -438,6 +472,7 @@ export function AuthorProblemEditorPage() {
               <span className="sample-count">{readyCount} готовы</span>
             </div>
             <p className="muted-copy">После создания теста файлы отправляются в хранилище по временным ссылкам. Тест участвует в проверке только после подтверждения.</p>
+            {testError && <Notice title="Не удалось создать или загрузить тест" tone="error" role="alert">{testError}</Notice>}
             <form className="test-upload-form" onSubmit={(event) => void handleCreateTest(event)}>
               <label className="form-field">
                 <span className="field-label">Входные данные</span>
@@ -455,19 +490,19 @@ export function AuthorProblemEditorPage() {
                 <input type="checkbox" name="isSample" disabled={testBusy || Boolean(testUpload)} />
                 <span>Открытый пример</span>
               </label>
-              <Button type="submit" disabled={testBusy || Boolean(testUpload)}>{testBusy ? 'Создаём…' : 'Создать и загрузить тест'}</Button>
+              <Button type="submit" disabled={testBusy || Boolean(testUpload)}>{testBusy ? 'Создаём и загружаем…' : 'Создать и загрузить тест'}</Button>
             </form>
 
             {testUpload && (
               <div className="pending-upload" role="status">
                 <div>
-                  <strong>Тест создан, файлы готовы к загрузке</strong>
+                  <strong>Тест создан, загрузка не завершена</strong>
                   <p>{testUpload.inputFile.name} · {testUpload.expectedFile.name}</p>
                   {testUpload.error && <p className="form-error">{testUpload.error}</p>}
-                  <span className="field-hint">Ссылки временные. Если загрузка не проходит из-за истечения срока, удалите неподтверждённый тест ниже и создайте его заново.</span>
+                  <span className="field-hint">Уже загруженный файл повторно отправлен не будет. Если временные ссылки истекли, удалите неподтверждённый тест ниже и создайте его заново.</span>
                 </div>
-                <Button onClick={() => void uploadAndConfirmTest()} disabled={testBusy}>
-                  {testBusy ? 'Загружаем…' : testUpload.uploaded ? 'Подтвердить тест' : 'Загрузить файлы и подтвердить'}
+                <Button onClick={() => void retryTestUpload()} disabled={testBusy}>
+                  {testBusy ? 'Загружаем…' : 'Повторить загрузку и подтвердить'}
                 </Button>
               </div>
             )}

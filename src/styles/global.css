@@ -175,8 +175,10 @@ button { cursor: pointer; }
 .sample-card-title h3 { margin: 0; font-size: 13px; }
 .sample-card-title span { color: var(--muted); font-size: 10px; }
 .sample-downloads { display: flex; flex-wrap: wrap; gap: 12px 19px; margin-top: 12px; }
-.sample-downloads a { color: var(--brand); font-size: 11px; font-weight: 700; text-decoration: none; }
-.sample-downloads a:hover { text-decoration: underline; }
+.sample-download-button { padding: 0; border: 0; background: transparent; color: var(--brand); font-size: 11px; font-weight: 700; text-decoration: none; }
+.sample-download-button:hover:not(:disabled) { text-decoration: underline; }
+.sample-download-button:disabled { color: var(--muted); cursor: wait; }
+.sample-download-error { margin: 10px 0 0; color: #a13d36; font-size: 11px; line-height: 1.5; }
 .problem-submit-action { display: flex; justify-content: flex-end; padding-top: 18px; }
 .submit-page { padding-block: 38px 72px; }
 .submit-page > .page-heading { margin-bottom: 5px; }
