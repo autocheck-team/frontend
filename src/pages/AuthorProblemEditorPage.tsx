@@ -63,6 +63,12 @@ function errorMessage(error: unknown) {
     : 'Не удалось выполнить запрос.'
 }
 
+function formatBytes(value?: string) {
+  if (value === undefined) return 'размер не указан'
+  const bytes = Number(value)
+  return Number.isFinite(bytes) ? `${bytes.toLocaleString('ru-RU')} байт` : `${value} байт`
+}
+
 function verdictLabel(verdict: string) {
   const key = verdict.replace(/^VERDICT_/, '')
   return ({ OK: 'принято', COMPILATION_ERROR: 'ошибка компиляции', WRONG_ANSWER: 'неверный ответ', TIME_LIMIT_EXCEEDED: 'лимит времени', MEMORY_LIMIT_EXCEEDED: 'лимит памяти', RUNTIME_ERROR: 'ошибка выполнения', SYSTEM_ERROR: 'сбой проверки', UNSPECIFIED: 'не завершена' } as Record<string, string>)[key] ?? key
@@ -94,6 +100,10 @@ export function AuthorProblemEditorPage() {
   const [testUpload, setTestUpload] = useState<TestUpload | null>(null)
   const [testBusy, setTestBusy] = useState(false)
   const [testError, setTestError] = useState<string | null>(null)
+  const [selectedTestFiles, setSelectedTestFiles] = useState<{ input: File | null; expected: File | null }>({
+    input: null,
+    expected: null,
+  })
   const [checkerBusy, setCheckerBusy] = useState(false)
   const [checkerMessage, setCheckerMessage] = useState<string | null>(null)
   const [stats, setStats] = useState<SubmissionSummary[] | null>(null)
@@ -231,6 +241,7 @@ export function AuthorProblemEditorPage() {
         expectedUploaded: false,
       })
       formElement.reset()
+      setSelectedTestFiles({ input: null, expected: null })
       await uploadAndConfirmTest({
         id: createdTestCase.id,
         inputUrl: created.inputUploadUrl,
@@ -472,15 +483,24 @@ export function AuthorProblemEditorPage() {
               <span className="sample-count">{readyCount} готовы</span>
             </div>
             <p className="muted-copy">После создания теста файлы отправляются в хранилище по временным ссылкам. Тест участвует в проверке только после подтверждения.</p>
+            <p className="field-hint">Выбирается сохранённая версия файла с диска. Сохраните изменения в редакторе файла, затем выберите его здесь.</p>
             {testError && <Notice title="Не удалось создать или загрузить тест" tone="error" role="alert">{testError}</Notice>}
             <form className="test-upload-form" onSubmit={(event) => void handleCreateTest(event)}>
               <label className="form-field">
                 <span className="field-label">Входные данные</span>
-                <input className="text-input file-input" type="file" name="inputFile" required disabled={testBusy || Boolean(testUpload)} />
+                <input className="text-input file-input" type="file" name="inputFile" required disabled={testBusy || Boolean(testUpload)} onChange={(event) => {
+                  const file = event.currentTarget.files?.[0] ?? null
+                  setSelectedTestFiles((current) => ({ ...current, input: file }))
+                }} />
+                {selectedTestFiles.input && <span className="field-hint">{selectedTestFiles.input.size.toLocaleString('ru-RU')} байт{selectedTestFiles.input.size === 0 ? ' — файл пустой' : ''}</span>}
               </label>
               <label className="form-field">
                 <span className="field-label">Ожидаемый вывод</span>
-                <input className="text-input file-input" type="file" name="expectedFile" required disabled={testBusy || Boolean(testUpload)} />
+                <input className="text-input file-input" type="file" name="expectedFile" required disabled={testBusy || Boolean(testUpload)} onChange={(event) => {
+                  const file = event.currentTarget.files?.[0] ?? null
+                  setSelectedTestFiles((current) => ({ ...current, expected: file }))
+                }} />
+                {selectedTestFiles.expected && <span className="field-hint">{selectedTestFiles.expected.size.toLocaleString('ru-RU')} байт{selectedTestFiles.expected.size === 0 ? ' — файл пустой' : ''}</span>}
               </label>
               <label className="form-field points-field">
                 <span className="field-label">Баллы</span>
@@ -497,7 +517,7 @@ export function AuthorProblemEditorPage() {
               <div className="pending-upload" role="status">
                 <div>
                   <strong>Тест создан, загрузка не завершена</strong>
-                  <p>{testUpload.inputFile.name} · {testUpload.expectedFile.name}</p>
+                  <p>{testUpload.inputFile.name} ({testUpload.inputFile.size.toLocaleString('ru-RU')} байт) · {testUpload.expectedFile.name} ({testUpload.expectedFile.size.toLocaleString('ru-RU')} байт)</p>
                   {testUpload.error && <p className="form-error">{testUpload.error}</p>}
                   <span className="field-hint">Уже загруженный файл повторно отправлен не будет. Если временные ссылки истекли, удалите неподтверждённый тест ниже и создайте его заново.</span>
                 </div>
@@ -515,7 +535,9 @@ export function AuthorProblemEditorPage() {
                   <article className="author-test-row" key={testCase.id}>
                     <div>
                       <strong>Тест {testCase.ordinal}</strong>
-                      <span>{testCase.isSample ? 'Открытый пример' : 'Закрытый тест'} · {testCase.points} б. · {testCase.isReady ? 'готов' : 'не подтверждён'}</span>
+                      <span>{testCase.isSample ? 'Открытый пример' : 'Закрытый тест'} · {testCase.points} б. · {testCase.isReady
+                        ? `готов · вход ${formatBytes(testCase.inputSizeBytes)} · вывод ${formatBytes(testCase.expectedSizeBytes)}`
+                        : 'не подтверждён'}</span>
                     </div>
                     <Button className="button-secondary" disabled={testBusy} onClick={() => void removeTest(testCase.id)}>Удалить</Button>
                   </article>
