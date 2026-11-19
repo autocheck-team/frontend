@@ -8,6 +8,12 @@ import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 import { ProblemsPage } from '../pages/ProblemsPage'
 import { ProblemPage } from '../pages/ProblemPage'
+import { AuthorRequired } from '../auth/AuthorRequired'
+import { AuthorProblemsPage } from '../pages/AuthorProblemsPage'
+import { AuthorProblemEditorPage } from '../pages/AuthorProblemEditorPage'
+import { SubmitProblemPage } from '../pages/SubmitProblemPage'
+import { SubmissionResultPage } from '../pages/SubmissionResultPage'
+import { SubmissionHistoryPage } from '../pages/SubmissionHistoryPage'
 
 export function App() {
   return (
@@ -18,6 +24,18 @@ export function App() {
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
+          <Route
+            path="author/problems"
+            element={<AuthRequired><AuthorRequired><AuthorProblemsPage /></AuthorRequired></AuthRequired>}
+          />
+          <Route
+            path="author/problems/new"
+            element={<AuthRequired><AuthorRequired><AuthorProblemEditorPage /></AuthorRequired></AuthRequired>}
+          />
+          <Route
+            path="author/problems/:problemId"
+            element={<AuthRequired><AuthorRequired><AuthorProblemEditorPage /></AuthorRequired></AuthRequired>}
+          />
           <Route
             path="problems"
             element={
@@ -33,6 +51,22 @@ export function App() {
                 <ProblemPage />
               </AuthRequired>
             }
+          />
+          <Route
+            path="problems/:problemId/submit"
+            element={
+              <AuthRequired>
+                <SubmitProblemPage />
+              </AuthRequired>
+            }
+          />
+          <Route
+            path="submissions"
+            element={<AuthRequired><SubmissionHistoryPage /></AuthRequired>}
+          />
+          <Route
+            path="submissions/:submissionId"
+            element={<AuthRequired><SubmissionResultPage /></AuthRequired>}
           />
           <Route path="404" element={<NotFoundPage />} />
           <Route path="*" element={<Navigate to="/404" replace />} />
