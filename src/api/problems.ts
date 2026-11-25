@@ -13,9 +13,12 @@ export interface Problem {
   timeLimitMs: number
   memoryLimitKb: number
   checker: string
+  floatEpsilon?: number
   languageIds: string[]
+  allowAiHints?: boolean
   isPublished: boolean
   readyTestCount: number
+  stopOnFirstFailure?: boolean
 }
 
 export interface ProblemPage {

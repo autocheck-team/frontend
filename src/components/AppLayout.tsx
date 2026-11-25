@@ -14,6 +14,8 @@ export function AppLayout() {
           </NavLink>
           <nav className="main-nav" aria-label="Основная навигация">
             <NavLink to="/problems">Задания</NavLink>
+            {auth.status === 'authenticated' && <NavLink to="/submissions">Мои посылки</NavLink>}
+            {(auth.hasRole('author') || auth.hasRole('admin')) && <NavLink to="/author/problems">Мои задания</NavLink>}
             {auth.status === 'authenticated' ? (
               <Button className="nav-account-button" onClick={() => void auth.logout()}>Выйти</Button>
             ) : (

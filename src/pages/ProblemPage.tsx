@@ -7,6 +7,7 @@ import { useApiClient } from '../api/useApiClient'
 import { Button } from '../components/ui/Button'
 import { Notice } from '../components/ui/Notice'
 import { PageHeading } from '../components/ui/PageHeading'
+import { ButtonLink } from '../components/ui/Button'
 
 interface ProblemDetails {
   problem: Problem
@@ -43,6 +44,51 @@ export function ProblemPage() {
   const api = useApiClient()
   const [retry, setRetry] = useState(0)
   const [result, setResult] = useState<ProblemResult | null>(null)
+  const [downloads, setDownloads] = useState<Record<string, { busy: boolean; error?: string }>>({})
+
+  async function downloadSampleFile(
+    url: string,
+    key: string,
+    filename: string,
+    testCaseId: string,
+    fileKind: 'input' | 'expected',
+  ) {
+    setDownloads((current) => ({ ...current, [key]: { busy: true } }))
+    try {
+      let response = await fetch(url)
+      if (response.status === 403) {
+        const freshTestCases = await listProblemTestCases(api, problemId)
+        const freshTestCase = freshTestCases.find((testCase) => testCase.id === testCaseId)
+        const freshUrl = fileKind === 'input' ? freshTestCase?.inputDownloadUrl : freshTestCase?.expectedDownloadUrl
+        if (freshUrl) response = await fetch(freshUrl)
+      }
+      if (!response.ok) {
+        throw new Error(response.status === 403
+          ? 'Ссылка на файл истекла. Обновите страницу задания и попробуйте снова.'
+          : `Хранилище не отдало файл (HTTP ${response.status}).`)
+      }
+      const objectUrl = URL.createObjectURL(await response.blob())
+      const link = document.createElement('a')
+      link.href = objectUrl
+      link.download = filename
+      link.style.display = 'none'
+      document.body.append(link)
+      link.click()
+      link.remove()
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
+      setDownloads((current) => ({ ...current, [key]: { busy: false } }))
+    } catch (error) {
+      setDownloads((current) => ({
+        ...current,
+        [key]: {
+          busy: false,
+          error: error instanceof Error && error.message
+            ? error.message
+            : 'Не удалось получить файл. Проверьте доступность хранилища и CORS для GET-запросов с localhost:5173.',
+        },
+      }))
+    }
+  }
 
   useEffect(() => {
     if (!isUuid(problemId)) return
@@ -124,6 +170,9 @@ export function ProblemPage() {
           <div><span>Память</span><strong>{formatMemory(problem.memoryLimitKb)}</strong></div>
         </div>
       </header>
+      <div className="problem-submit-action">
+        <ButtonLink to={`/problems/${encodeURIComponent(problem.id)}/submit`}>Отправить решение</ButtonLink>
+      </div>
 
       <section className="detail-section statement-section">
         <h2>Условие</h2>
@@ -160,9 +209,23 @@ export function ProblemPage() {
               <article className="sample-card" key={sample.id}>
                 <div className="sample-card-title"><h3>Пример {sample.ordinal}</h3><span>{sample.points} б.</span></div>
                 <div className="sample-downloads">
-                  {sample.inputDownloadUrl && <a href={sample.inputDownloadUrl} target="_blank" rel="noreferrer">Скачать входные данные</a>}
-                  {sample.expectedDownloadUrl && <a href={sample.expectedDownloadUrl} target="_blank" rel="noreferrer">Скачать ожидаемый вывод</a>}
+                  {sample.inputDownloadUrl && <a href={sample.inputDownloadUrl} target="_blank" rel="noreferrer">Просмотреть входные данные</a>}
+                  {sample.expectedDownloadUrl && <a href={sample.expectedDownloadUrl} target="_blank" rel="noreferrer">Просмотреть ожидаемый вывод</a>}
                 </div>
+                  {sample.inputDownloadUrl && <button
+                    type="button"
+                    className="sample-download-button"
+                    disabled={downloads[`${sample.id}:input`]?.busy}
+                    onClick={() => void downloadSampleFile(sample.inputDownloadUrl!, `${sample.id}:input`, `${problem.slug}-sample-${sample.ordinal}-input.txt`, sample.id, 'input')}
+                  >{downloads[`${sample.id}:input`]?.busy ? 'Скачиваем…' : 'Скачать входные данные'}</button>}
+                  {sample.expectedDownloadUrl && <button
+                    type="button"
+                    className="sample-download-button"
+                    disabled={downloads[`${sample.id}:expected`]?.busy}
+                    onClick={() => void downloadSampleFile(sample.expectedDownloadUrl!, `${sample.id}:expected`, `${problem.slug}-sample-${sample.ordinal}-output.txt`, sample.id, 'expected')}
+                  >{downloads[`${sample.id}:expected`]?.busy ? 'Скачиваем…' : 'Скачать ожидаемый вывод'}</button>}
+                {downloads[`${sample.id}:input`]?.error && <p className="sample-download-error" role="alert">Входные данные: {downloads[`${sample.id}:input`]?.error}</p>}
+                {downloads[`${sample.id}:expected`]?.error && <p className="sample-download-error" role="alert">Ожидаемый вывод: {downloads[`${sample.id}:expected`]?.error}</p>}
               </article>
             ))}
           </div>
