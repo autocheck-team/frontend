@@ -209,6 +209,9 @@ export function ProblemPage() {
               <article className="sample-card" key={sample.id}>
                 <div className="sample-card-title"><h3>Пример {sample.ordinal}</h3><span>{sample.points} б.</span></div>
                 <div className="sample-downloads">
+                  {sample.inputDownloadUrl && <a href={sample.inputDownloadUrl} target="_blank" rel="noreferrer">Просмотреть входные данные</a>}
+                  {sample.expectedDownloadUrl && <a href={sample.expectedDownloadUrl} target="_blank" rel="noreferrer">Просмотреть ожидаемый вывод</a>}
+                </div>
                   {sample.inputDownloadUrl && <button
                     type="button"
                     className="sample-download-button"
@@ -221,7 +224,6 @@ export function ProblemPage() {
                     disabled={downloads[`${sample.id}:expected`]?.busy}
                     onClick={() => void downloadSampleFile(sample.expectedDownloadUrl!, `${sample.id}:expected`, `${problem.slug}-sample-${sample.ordinal}-output.txt`, sample.id, 'expected')}
                   >{downloads[`${sample.id}:expected`]?.busy ? 'Скачиваем…' : 'Скачать ожидаемый вывод'}</button>}
-                </div>
                 {downloads[`${sample.id}:input`]?.error && <p className="sample-download-error" role="alert">Входные данные: {downloads[`${sample.id}:input`]?.error}</p>}
                 {downloads[`${sample.id}:expected`]?.error && <p className="sample-download-error" role="alert">Ожидаемый вывод: {downloads[`${sample.id}:expected`]?.error}</p>}
               </article>

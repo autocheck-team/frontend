@@ -1,8 +1,12 @@
 <<<<<<< HEAD
+# AutoCheck frontend
+=======
+<<<<<<< HEAD
 =======
 
 >>>>>>> 2034eafebe412649b2d55cb30b8bb6fd7246e080
 # Frontend
+>>>>>>> 98271657b6173a4aa61826129a7830aa25c59f5a
 
 [![CI](https://github.com/autocheck-team/frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/autocheck-team/frontend/actions/workflows/ci.yml)
 
@@ -49,7 +53,7 @@ npm run build
 
 ## Инфраструктура и API
 
-Frontend запускается отдельно от инфраструктуры. В `../infra/README.md` описан запуск общего стека командой `make up` из каталога `infra`; если используется локальный исходник backend, документация указывает `make up-local`. Эти команды запускают Compose-сервисы, включая PostgreSQL, SeaweedFS, Keycloak, миграции и backend API.
+Frontend включён в общий Compose-стек: команда `make up` из `../infra` запускает Vite в контейнере вместе с PostgreSQL, SeaweedFS, Keycloak, миграциями, backend API и worker. Исходники frontend подключаются в контейнер для hot reload. Если используется локальный исходник backend, запустите `make up-local` из `infra` — frontend также поднимется автоматически.
 
 REST API доступен на `http://localhost:8080`, OpenAPI — `GET /openapi.yaml`. Контракты находятся в `../backend/api/openapi/autocheck.swagger.yaml` и `../backend/api/autocheck/v1/`. API-клиент передаёт Bearer-токен, если он предоставлен, и преобразует сетевые/HTTP-ошибки в `ApiError`.
 
@@ -62,8 +66,11 @@ OIDC использует realm `autocheck` и публичный клиент `
 - `/forgot-password` направляет на hosted-страницу Keycloak, где пользователь выбирает сброс пароля. Локальный realm не содержит SMTP-настроек, поэтому письмо для сброса не доставляется до настройки почтового сервера.
 - `/problems` показывает доступные задания с backend-пагинацией и авторским фильтром `onlyMine`; текстовый поиск ограничен уже загруженной страницей, так как server-side search отсутствует в API.
 - `/problems/:problemId` показывает условие, лимиты, названия доступных языков и открытые готовые тесты; файлы примеров доступны по временным ссылкам backend.
+<<<<<<< HEAD
+=======
 - `/author/problems` и страницы `/author/problems/new`, `/author/problems/:problemId` доступны автору и администратору для создания и редактирования заданий, настройки чекера и языков, загрузки/подтверждения тестов и просмотра статистики из постраничного списка посылок.
 - `/problems/:problemId/submit` загружает Monaco Editor отдельно, ограничивает UTF-8 исходник 64 КБ и отправляет решение с ключом идемпотентности. Страница результата проверки пока не подключена.
+>>>>>>> 98271657b6173a4aa61826129a7830aa25c59f5a
 - Worker backend пока не выполняет проверку решений; frontend не показывает фиктивные результаты.
 - В backend-контрактах не обнаружен SSE API.
 - Без параметров OIDC публичная стартовая страница остаётся доступна; защищённые разделы сообщают, что авторизация не настроена.
